@@ -1,6 +1,7 @@
 
 import { createInterface } from "readline"
 import { getCommands } from "./command.js";
+import { State } from "./state.js"
 
 export function cleanInput(input: string): string[] {
     let trimmed = input.toLowerCase().trim(); // trim removes excess white space at the staart and end
@@ -10,24 +11,20 @@ export function cleanInput(input: string): string[] {
   return trimmed.split(/\s+/); //splits the trimmed string into an array at white spaces, also accounts for multiple white spaces
     } 
 
-export const rl = createInterface({
-  input: process.stdin, // reads stream
-  output: process.stdout, // writes stream
-  prompt: "Pokédex > "
-});
 
-export function startREPL() {
-rl.prompt();
-rl.on("line", (line: string) => {
+
+export function startREPL(state: State) {
+state.rl.prompt();
+state.rl.on("line", (line: string) => {
   try {
     const words = cleanInput(line);
     let cmd = words[0]
 
-    const commands = getCommands();
-    const command = commands[cmd]; // CLICommand | undefined
+    
+    const command = state.commands[cmd]; // CLICommand | undefined
 
-    if (cmd in commands) {
-      command.callback(commands);
+    if (command) {
+      command.callback(state)
     } else {
       console.log("Unknown command")
     }
@@ -35,7 +32,7 @@ rl.on("line", (line: string) => {
   } catch (err) {
     console.log("Error:", err instanceof Error ? err.message : err);
   } finally {
-    rl.prompt();
+    state.rl.prompt();
   }
 });
 
