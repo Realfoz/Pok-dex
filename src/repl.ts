@@ -14,26 +14,25 @@ export function cleanInput(input: string): string[] {
 
 
 export function startREPL(state: State) {
-state.rl.prompt();
-state.rl.on("line", (line: string) => {
-  try {
-    const words = cleanInput(line);
-    let cmd = words[0]
+  state.rl.setPrompt("Pokedex > ");
+  state.rl.prompt();
+  state.rl.on("line", async (line: string) => {
+    try {
+      const words = cleanInput(line);
+      let cmd = words[0]
+      const command = state.commands[cmd]; // CLICommand | undefined
 
-    
-    const command = state.commands[cmd]; // CLICommand | undefined
-
-    if (command) {
-      command.callback(state)
-    } else {
-      console.log("Unknown command")
+      if (command) {
+        await command.callback(state)
+      } else {
+        console.log("Unknown command")
+      }
+      
+    } catch (err) {
+      console.log("Error:", err instanceof Error ? err.message : err);
+    } finally {
+      state.rl.prompt();
     }
-    
-  } catch (err) {
-    console.log("Error:", err instanceof Error ? err.message : err);
-  } finally {
-    state.rl.prompt();
-  }
-});
+  });
 
-}
+  }
