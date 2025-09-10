@@ -1,6 +1,7 @@
 import { createInterface, type Interface } from "readline";
 import { getCommands } from "./command.js";
 import { PokeAPI } from "./pokeapi.js";
+import { Cache } from "./pokecache.js";
 
 export type CLICommand = {
   name: string;
@@ -17,16 +18,17 @@ export type State = {
 };
 
 export function initState(): State {
+    const cache = new Cache(1000)
     const rl = createInterface({
     input: process.stdin, // reads stream
     output: process.stdout, // writes stream
     prompt: "Pokédex > "
-});
+    });
     const commands = getCommands()
     return {
         commands: commands,
         rl: rl,
-        api: new PokeAPI(),
+        api: new PokeAPI(cache),
         nextLocationsURL: null,
         prevLocationsURL: null,
     }
