@@ -20,10 +20,11 @@ export function startREPL(state: State) {
     try {
       const words = cleanInput(line);
       let cmd = words[0]
+      let args = words.slice(1);
       const command = state.commands[cmd]; // CLICommand | undefined
 
       if (command) {
-        await command.callback(state)
+        await command.callback(state, ...args)
       } else {
         console.log("Unknown command")
       }

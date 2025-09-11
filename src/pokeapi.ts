@@ -8,6 +8,23 @@ export class PokeAPI {
 
   }
 
+
+    async fetchNameData(locationName: string): Promise<Location> {
+        const url = `${PokeAPI.baseURL}/location-area/${locationName}`;
+        const cached = this.cache.get<Location>(url);
+        if (cached) {
+           return cached;
+        } else {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`request failed: ${response.status}`);
+        const data = await response.json();
+        this.cache.add(url, data);
+        return data;
+        }
+}
+  
+
+
     async fetchLocations(pageURL?: string): Promise<ShallowLocations> {
         const url = pageURL ?? `${PokeAPI.baseURL}/location-area`;
         const cached = this.cache.get<ShallowLocations>(url);
@@ -22,15 +39,22 @@ export class PokeAPI {
         }
 }
   
+async fetchLocation(locationName: string): Promise<Location> {
+  const url = `${PokeAPI.baseURL}/location-area/${locationName}`;
 
-  async fetchLocation(locationName: string): Promise<Location> {
-        const response = await fetch(`${PokeAPI.baseURL}/location-area/${locationName}`);
-            if (!response.ok) {
-            throw new Error(`request failed: ${response.status}`);
-            }
-            const data = await response.json();
-            return data;
-}}
+  const cached = this.cache.get<Location>(url);
+  if (cached) return cached;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`request failed: ${response.status}`);
+  }
+
+  const data: Location = await response.json();
+  this.cache.add(url, data);
+  return data;
+}
+}
 
 export type ShallowLocations = {
   results: {name: string; url: string}[];
@@ -40,4 +64,10 @@ export type ShallowLocations = {
 
 export type Location = {
     name: string;
+    pokemon_encounters: pokemonEncounter[];
 };
+
+export type pokemonEncounter = {
+  pokemon: {name: string, url: string};
+  version_details: object[];
+}
